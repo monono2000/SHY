@@ -236,11 +236,6 @@ python -u main.py --dataset_name MIMIC_IV --num_epoch 50 --batch_size 4 --temper
 - 3410
 - 3411
 
-설명:
-- seed는 **난수 고정값**입니다.
-- 이 숫자 자체가 논문의 공식 seed라는 뜻은 아닙니다.
-- 목적은 **반복 실행 후 평균과 표준편차를 계산하는 것**입니다.
-
 ---
 
 ## 9. Run Scripts
