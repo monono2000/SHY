@@ -317,7 +317,7 @@ python aggregate_results.py
 
 ## 11. Main Results
 
-대표 결과는 **50 epoch 기준 평균 결과**를 사용합니다.
+demo 데이터 대표 결과는 **50 epoch 기준 평균 결과**를 사용했습니다.
 
 | Dataset | Setting | Recall@10 | Recall@20 | nDCG@10 | nDCG@20 | Test Loss |
 |--------|---------|-----------|-----------|---------|---------|-----------|
@@ -326,72 +326,41 @@ python aggregate_results.py
 | MIMIC-IV | Paper (SHy) | 0.3344 | 0.4270 | 0.4236 | 0.4239 | - |
 | MIMIC-IV | Ours (50 epoch, 5 runs) | 0.2276 ± 0.0253 | 0.2823 ± 0.0270 | 0.4244 ± 0.0276 | 0.3926 ± 0.0241 | 0.2772 ± 0.0017 |
 
----
+---  
 
-> 위 결과는 **demo/subset 환경에서 50 epoch, 5회 반복 실행 후 얻은 평균 ± 표준편차**이다.  
-> 따라서 이 수치는 논문 reported result와의 **strict reproduction**이라기보다,  
-> **축소 데이터 환경에서 SHy 파이프라인이 안정적으로 동작하는지 검증한 결과**로 해석해야 한다.  
->  
-> 특히 MIMIC-III와 MIMIC-IV 모두에서 Recall 계열 지표는 논문 full-data 실험보다 낮게 나타났지만,  
-> 일부 nDCG 지표는 논문 수치에 근접한 값을 보였다. 이는 작은 데이터 환경에서도  
-> SHy가 상위 진단 후보의 정렬 품질을 일정 수준 유지할 수 있음을 시사한다.  
-> 다만 demo/subset 환경에서는 데이터 규모가 매우 작고 분산이 크기 때문에,  
-> 일부 metric이 높게 보이더라도 이를 논문 대비 성능 우위로 해석해서는 안 된다.  
+### Metric 설명
+
+- **Recall@10 / Recall@20**: 상위 10개 또는 20개 예측 안에 실제 정답 진단이 얼마나 포함되었는지를 나타내는 지표
+- **nDCG@10 / nDCG@20**: 상위 10개 또는 20개 예측에서 실제 정답 진단이 얼마나 높은 순위에 배치되었는지를 반영하는 지표
+- **Test Loss**: 테스트 데이터에서의 전체 예측 오차를 나타내는 값으로, 일반적으로 낮을수록 좋음
 
 
 ## 12. Visualization
 
 학습 후 생성된 시각화 이미지는 다음과 같이 해석할 수 있습니다.
 
+![Total Loss](./training_logs/04_09_2026M13_53_53__3411__MIMIC_IV/total_loss_plot.svg)
 ### `total_loss_plot.svg`
 - training loss와 test loss를 함께 표시
 - 두 곡선 차이가 벌어질수록 과적합 가능성이 증가함
 
+![Total Loss](./training_logs/04_09_2026M13_53_53__3411__MIMIC_IV/prediction_loss_plot.svg)
 ### `prediction_loss_plot.svg`
 - prediction loss 변화 추적
 - 예측 성능이 어느 시점부터 안정화되거나 악화되는지 확인 가능
 
+![Total Loss](./training_logs/04_09_2026M13_53_53__3411__MIMIC_IV/recall_plot.svg)
 ### `recall_plot.svg`
 - Recall@k 변화 시각화
 - 상위 k개 예측 안에 정답을 얼마나 잘 포함시키는지 확인 가능
 
+![Total Loss](./training_logs/04_09_2026M13_53_53__3411__MIMIC_IV/ndcg_plot.svg)
 ### `ndcg_plot.svg`
 - nDCG@k 변화 시각화
 - 정답을 얼마나 높은 순위에 배치하는지 확인 가능
 
----
 
-## 13. Comparison with the Paper
-
-원 논문은 full MIMIC-III / MIMIC-IV를 사용하며,  
-0.8:0.1:0.1 split, batch size 128, 5회 평균 결과를 보고합니다.
-
-논문 reported result는 다음과 같습니다.
-
-### MIMIC-III
-- Recall@10: 0.2775
-- Recall@20: 0.3831
-- nDCG@10: 0.4135
-- nDCG@20: 0.4088
-
-### MIMIC-IV
-- Recall@10: 0.3344
-- Recall@20: 0.4270
-- nDCG@10: 0.4236
-- nDCG@20: 0.4239
-
-본 프로젝트는 demo/subset 기반이므로,  
-논문 수치와 **직접적인 1:1 재현 결과**로 해석해서는 안 됩니다.
-
-대신 본 결과는 다음을 보여줍니다.
-
-- SHy의 구조가 실제로 동작하는지
-- 전처리-학습-평가 파이프라인이 축소 환경에서도 유효한지
-- 반복 실행 기준으로 metric이 어느 정도 안정적인지
-
----
-
-## 14. Interpretation of Our Results
+## 13. Interpretation of Our Results
 
 본 프로젝트 결과는 다음처럼 해석하는 것이 적절합니다.
 
@@ -413,41 +382,16 @@ python aggregate_results.py
 
 ---
 
-## 15. Limitations
+## 14. Limitations
 
 이 프로젝트의 한계는 다음과 같습니다.
 
 1. full MIMIC 데이터가 아니라 demo/subset 기반입니다.
 2. 전처리 단계에서 small-data 환경에 맞춘 보정이 포함되었습니다.
-3. 따라서 논문 reported result와 직접적인 1:1 비교는 어렵습니다.
-4. 일부 metric이 높게 보이더라도 작은 데이터 분산의 영향일 수 있습니다.
+3. 위에서 말했듯 일부 metric이 높게 보이더라도 작은 데이터 분산의 영향일 수 있습니다.
 
-즉, 본 저장소의 결과는  
-**논문 수치 재현 결과**라기보다  
-**축소 환경에서 SHy 구조를 검증한 결과**로 해석해야 합니다.
 
----
-
-## 16. Files Included / Excluded
-
-### 포함한 것
-- 수정한 preprocessing notebook
-- 학습 실행 스크립트
-- 결과 집계 스크립트
-- 시각화 이미지
-- README
-
-### 포함하지 않은 것
-- MIMIC raw data
-- 전처리 산출물 전체
-- training_logs 전체 원본
-- saved_models 전체
-
-이들은 데이터 라이선스 및 저장 용량 문제로 커밋하지 않았습니다.
-
----
-
-## 17. Conclusion
+## 15. Conclusion
 
 본 프로젝트는 SHy를 demo/subset 환경에서 실행 가능하게 만들고,  
 MIMIC-III와 MIMIC-IV 모두에 대해 전처리-학습-평가 파이프라인을 검증한 구현입니다.
