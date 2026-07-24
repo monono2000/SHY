@@ -1,14 +1,24 @@
 # SHy
 Implementation for the paper: Self-Explaining Hypergraph Neural Networks for Diagnosis Prediction.
 
+This repository contains code only. MIMIC raw files, preprocessed arrays, checkpoints, and training logs are intentionally excluded from Git.
+
 ## Requirements
 - Python 3.9.13
 - PyTorch 1.13.1
-- Pyro 1.8.4
 - torch_scatter 2.1.0+pt113cu116
 - torch_sparse 0.6.16+pt113cu116
 - torch_geometric 2.2.0
-- DHG 0.9.3
+- NumPy
+- Matplotlib
+
+Install the Python packages listed above with:
+```bash
+pip install -r requirements.txt
+```
+
+Linux note:
+- `torch_scatter`, `torch_sparse`, and `torch_geometric` must be installed with builds that match your PyTorch and CUDA/CPU environment.
 
 ## Data Downloading and Preprocessing
 First, make the following directories:
@@ -22,7 +32,7 @@ Download the following MIMIC-III data files from [PhysioNet](https://physionet.o
 - DIAGNOSES_ICD.csv
 - D_ICD_DIAGNOSES.csv
 
-Run the preprocessing notebook for MIMIC-III: `./src/iii_preprocessing.ipynb`.
+Run the preprocessing notebook for MIMIC-III: `./notebooks/iii_preprocessing.ipynb`.
 
 ### Experiments on MIMIC-IV
 Download the following MIMIC-IV data files from [PhysioNet](https://physionet.org/content/mimiciv/1.0/) to the directory `./data/RAW/MIMIC_IV`:
@@ -30,25 +40,36 @@ Download the following MIMIC-IV data files from [PhysioNet](https://physionet.or
 - diagnoses_icd.csv
 - d_icd_diagnoses.csv
 
-Run the preprocessing notebook for MIMIC-IV: `./src/iv_preprocessing.ipynb`.
+Run the preprocessing notebook for MIMIC-IV: `./notebooks/iv_preprocessing.ipynb`.
 
 ## Model Training and Evaluation
 First, make the following directories:
 - `./saved_models`
 - `./training_logs`
-### Experiments on MIMIC-III
-In `./src`, run the following command:
+All Python entry points below are cross-platform and can be run from the project root on Linux, macOS, or Windows.
+
+Recommended:
 ```bash
-python -u main.py --temperature 1.0 1.0 1.0 1.0 1.0 --add_ratio 0.2 0.2 0.2 0.2 0.2 --loss_weight 1.0 0.003 0.00025 0.0 0.04
+python -m shy.main ...
+```
+
+Legacy `python main.py` from inside `./shy` also still works.
+### Experiments on MIMIC-III
+From the project root, run:
+```bash
+python -u -m shy.main --temperature 1.0 1.0 1.0 1.0 1.0 --add_ratio 0.2 0.2 0.2 0.2 0.2 --loss_weight 1.0 0.003 0.00025 0.0 0.04
 ```
 The model checkpoint at each epoch will be saved in `./saved_models`. When the training is done, the results will be saved in `./training_logs`.
 
 ### Experiments on MIMIC-IV
-In `./src`, run the following command:
+From the project root, run:
 ```bash
-python -u main.py --dataset_name 'MIMIC_IV' --temperature 1.0 1.0 1.0 1.0 1.0 --add_ratio 0.2 0.2 0.2 0.2 0.2 --loss_weight 1.0 0.003 0.00025 0.0 0.04
+python -u -m shy.main --dataset_name MIMIC_IV --temperature 1.0 1.0 1.0 1.0 1.0 --add_ratio 0.2 0.2 0.2 0.2 0.2 --loss_weight 1.0 0.003 0.00025 0.0 0.04
 ```
 The model checkpoint at each epoch will be saved in `./saved_models`. When the training is done, the results will be saved in `./training_logs`.
+
+Linux note:
+- MIMIC-III raw filenames are case-sensitive on Linux. Keep them exactly as `ADMISSIONS.csv`, `DIAGNOSES_ICD.csv`, and `D_ICD_DIAGNOSES.csv`.
 
 ## Choosing Optimal Hyperparameters
 The table below presents the final hyperparameters used on each dataset, including the range of considered values. These hyperparameters were determined through grid search.
