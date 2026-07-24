@@ -1,91 +1,108 @@
 # SHy
-Implementation for the paper: Self-Explaining Hypergraph Neural Networks for Diagnosis Prediction.
 
-This repository contains code only. MIMIC raw files, preprocessed arrays, checkpoints, and training logs are intentionally excluded from Git.
+Implementation of **Self-Explaining Hypergraph Neural Networks for Diagnosis Prediction (SHy)**.
+
+This repository contains code only. MIMIC raw files, preprocessed arrays, checkpoints, training logs, and result images are intentionally excluded from Git.
+
+## Project Structure
+
+```text
+SHy/
++-- shy/                 # Python package and training/evaluation code
++-- notebooks/           # MIMIC-III and MIMIC-IV preprocessing notebooks
++-- requirements.txt
++-- .gitignore
++-- README.md
+```
+
+Runtime directories are created or populated locally and are ignored by Git:
+
+- `data/`
+- `saved_models/`
+- `training_logs/`
 
 ## Requirements
+
 - Python 3.9.13
 - PyTorch 1.13.1
-- torch_scatter 2.1.0+pt113cu116
-- torch_sparse 0.6.16+pt113cu116
+- torch_scatter 2.1.0
+- torch_sparse 0.6.16
 - torch_geometric 2.2.0
 - NumPy
 - Matplotlib
 
-Install the Python packages listed above with:
+Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-Linux note:
-- `torch_scatter`, `torch_sparse`, and `torch_geometric` must be installed with builds that match your PyTorch and CUDA/CPU environment.
+`torch_scatter`, `torch_sparse`, and `torch_geometric` must match your PyTorch and CUDA/CPU environment.
 
-## Data Downloading and Preprocessing
-First, make the following directories:
-- `./data/RAW/MIMIC_III`
-- `./data/MIMIC_III`
-- `./data/MIMIC_IV/binary_test_x_slices`
-- `./data/MIMIC_IV/binary_train_x_slices`
-### Experiments on MIMIC-III
-Download the following MIMIC-III data files from [PhysioNet](https://physionet.org/content/mimiciii/1.4/) to the directory `./data/RAW/MIMIC_III`:
-- ADMISSIONS.csv
-- DIAGNOSES_ICD.csv
-- D_ICD_DIAGNOSES.csv
+## Data Preparation
 
-Run the preprocessing notebook for MIMIC-III: `./notebooks/iii_preprocessing.ipynb`.
+Create the local data directories:
 
-### Experiments on MIMIC-IV
-Download the following MIMIC-IV data files from [PhysioNet](https://physionet.org/content/mimiciv/1.0/) to the directory `./data/RAW/MIMIC_IV`:
-- admissions.csv
-- diagnoses_icd.csv
-- d_icd_diagnoses.csv
-
-Run the preprocessing notebook for MIMIC-IV: `./notebooks/iv_preprocessing.ipynb`.
-
-## Model Training and Evaluation
-First, make the following directories:
-- `./saved_models`
-- `./training_logs`
-All Python entry points below are cross-platform and can be run from the project root on Linux, macOS, or Windows.
-
-Recommended:
 ```bash
-python -m shy.main ...
+mkdir -p data/RAW/MIMIC_III data/RAW/MIMIC_IV data/MIMIC_III data/MIMIC_IV/binary_train_x_slices data/MIMIC_IV/binary_test_x_slices
 ```
 
-Legacy `python main.py` from inside `./shy` also still works.
-### Experiments on MIMIC-III
-From the project root, run:
-```bash
-python -u -m shy.main --temperature 1.0 1.0 1.0 1.0 1.0 --add_ratio 0.2 0.2 0.2 0.2 0.2 --loss_weight 1.0 0.003 0.00025 0.0 0.04
-```
-The model checkpoint at each epoch will be saved in `./saved_models`. When the training is done, the results will be saved in `./training_logs`.
+On Windows PowerShell:
 
-### Experiments on MIMIC-IV
-From the project root, run:
+```powershell
+New-Item -ItemType Directory -Force data\RAW\MIMIC_III, data\RAW\MIMIC_IV, data\MIMIC_III, data\MIMIC_IV\binary_train_x_slices, data\MIMIC_IV\binary_test_x_slices
+```
+
+MIMIC-III raw files expected in `data/RAW/MIMIC_III/`:
+
+- `ADMISSIONS.csv`
+- `DIAGNOSES_ICD.csv`
+- `D_ICD_DIAGNOSES.csv`
+- `icd9.txt`
+
+MIMIC-IV raw files expected in `data/RAW/MIMIC_IV/`:
+
+- `admissions.csv`
+- `diagnoses_icd.csv`
+- `d_icd_diagnoses.csv`
+- `icd9.txt`
+- `dump_list_icd9.pkl`
+
+Run preprocessing:
+
+- `notebooks/iii_preprocessing.ipynb`
+- `notebooks/iv_preprocessing.ipynb`
+
+## Training
+
+Run from the project root.
+
+MIMIC-III:
+
+```bash
+python -u -m shy.main --dataset_name MIMIC_III --temperature 1.0 1.0 1.0 1.0 1.0 --add_ratio 0.2 0.2 0.2 0.2 0.2 --loss_weight 1.0 0.003 0.00025 0.0 0.04
+```
+
+MIMIC-IV:
+
 ```bash
 python -u -m shy.main --dataset_name MIMIC_IV --temperature 1.0 1.0 1.0 1.0 1.0 --add_ratio 0.2 0.2 0.2 0.2 0.2 --loss_weight 1.0 0.003 0.00025 0.0 0.04
 ```
-The model checkpoint at each epoch will be saved in `./saved_models`. When the training is done, the results will be saved in `./training_logs`.
 
-Linux note:
-- MIMIC-III raw filenames are case-sensitive on Linux. Keep them exactly as `ADMISSIONS.csv`, `DIAGNOSES_ICD.csv`, and `D_ICD_DIAGNOSES.csv`.
+Checkpoints are saved under `saved_models/`. Metrics, losses, and plots are saved under `training_logs/`.
 
-## Choosing Optimal Hyperparameters
-The table below presents the final hyperparameters used on each dataset, including the range of considered values. These hyperparameters were determined through grid search.
+## Result Aggregation
 
-| Hyperparameters | MIMIC-III | MIMIC-IV | Search Range |
-| --------        | --------  | -------- | --------     |
-| $d_c$           | 32        | 32       | [16, 32]     |
-| $Z$             | 2         | 2        | [0, 1, 2, 3, 4]  |
-| $d_c^{(1)}$     | 1024      | 1024     | [256, 512, 1024] |
-| $d_c^{(2)}$     | 128       | 128      | [128]     |
-| $n_s$           | 10        | 10       | [10, 20]     |
-| $p$             | 0.2       | 0.2      | [0.2]     |
-| $K$             | 5         | 5        | [2, 3, 4, 5, 6]    |
-| $d_{hid}$       | 128       | 256      | [128, 256]     |
-| $d_Q$           | 256       | 256      | [256]     |
-| $d_V$           | 256       | 256      | [256]     |
-| $\epsilon$      | 0.003     | 0.003    | [0.003]     |
-| $\eta$          | 0.00025   | 0.0002   | [0.0002, 0.00025, 0.0003] |
-| $\omega$        | 0.04      | 0.04     | [0.02, 0.04]     |
+After training runs finish:
+
+```bash
+python -m shy.aggregate_results
+```
+
+The script reads run folders under `training_logs/` and prints grouped summary statistics.
+
+## Notes
+
+- MIMIC data is not included because of size and access restrictions.
+- Generated `.pkl`, `.npy`, `.pth`, log, and plot files should stay local.
+- Linux filesystems are case-sensitive. Keep MIMIC-III filenames exactly as shown above.
